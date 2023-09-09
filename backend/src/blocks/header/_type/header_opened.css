@@ -1,0 +1,10 @@
+.header_opened {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: solid 1px rgba(84, 84, 84, 0.7);
+  border-top: solid 1px rgba(84, 84, 84, 0.7);
+  margin: 170px 0 40px;
+  padding: 27px 30px 28px;
+}

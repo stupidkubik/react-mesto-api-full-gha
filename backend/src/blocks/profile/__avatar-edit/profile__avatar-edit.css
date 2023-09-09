@@ -1,0 +1,13 @@
+.profile__avatar-edit {
+    display: inline-block;
+    width: 120px;
+    height: 120px;
+    padding: 0;
+    border: 0;
+    background-image: url(../../../images/logo/icon-pen.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 26px;
+    background-color: transparent;
+}
+

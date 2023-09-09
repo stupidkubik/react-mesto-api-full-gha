@@ -1,0 +1,14 @@
+.popup__info-fail {
+  margin: 26px auto 32px;
+  width: 120px;
+  min-height: 120px;
+  background-image: url(../../../images/logo/fail.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+@media screen and (max-width: 530px) {
+  .popup__info-fail {
+    margin: 0 auto 40px;
+  }
+}

@@ -1,0 +1,27 @@
+.profile__edit {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: solid 1px #fff;
+    background-color: #000;
+    background-image: url(../../../images/logo/icon-pen.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 1;
+    vertical-align: top;
+    margin-top: 16px;
+}
+
+.profile__edit:hover {
+    opacity: .6;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 636px) {
+    .profile__edit {
+        width: 18px;
+        height: 18px;
+        margin-top: 33px;
+    }
+}

@@ -1,0 +1,22 @@
+.App__content {
+    margin: 0 200px;
+    min-height: 62vh;
+ }
+
+@media screen and (max-width: 1070px) {
+    .App__content {
+        margin: 0 100px;
+    }
+}
+
+@media screen and (max-width: 870px) {
+    .App__content {
+        margin: 0 50px;
+    }
+}
+
+@media screen and (max-width: 530px) {
+    .App__content {
+        margin: 0 19px;
+    }
+}

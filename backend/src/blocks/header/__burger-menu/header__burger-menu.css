@@ -1,0 +1,14 @@
+.header__burger-menu {
+  width: 24px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background-color: #000;
+  background-image: url(../../../images/logo/menu.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.header__burger-menu:hover {
+  opacity: 0.6;
+}

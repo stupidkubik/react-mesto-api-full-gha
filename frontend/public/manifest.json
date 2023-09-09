@@ -1,0 +1,6 @@
+{
+  "short_name": "Mesto React",
+  "name": "Mesto React",
+  "start_url": ".",
+  "display": "standalone"
+}

@@ -1,0 +1,13 @@
+.login__signin {
+  margin-bottom: 80px;
+  color: #FFF;
+  text-align: center;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+@media screen and (max-width: 530px) {
+  .login__signin {
+    margin-bottom: 40px;
+  }
+}
