@@ -1,7 +1,6 @@
 class Api {
-  constructor( { baseUrl, headers } ) {
+  constructor({ baseUrl }) {
     this._baseUrl = baseUrl
-    this._headers = headers
   }
 
   _request(url, options) {
@@ -16,42 +15,54 @@ class Api {
     }
   }
 
-  async getUserInfo() {
+  async getUserInfo(JWT) {
     const idData = await this._request(
       `/users/me`, {
       method: 'GET',
-      headers: this._headers
+      headers: {
+        Authorization: `Bearer ${JWT}`,
+        'Content-Type': 'application/json'
+      }
     })
     return idData
   }
 
-  async getCards() {
+  async getCards(JWT) {
     const cardsData = await this._request(
       `/cards`, {
       method: 'GET',
-      headers: this._headers
+      headers: {
+        Authorization: `Bearer ${JWT}`,
+        'Content-Type': 'application/json'
+      }
     })
     return cardsData
-  }    
+  }
 
-  async postCard({ title, link }) {
+  async postCard({ title, link }, JWT) {
     const newCardData = await this._request(
       `/cards`, {
       method: 'POST',
-      headers: this._headers,
+      headers: {
+        Authorization: `Bearer ${JWT}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         name: title,
         link: link
       })
     })
     return newCardData
-  } 
+  }
 
-  async updateProfile({ name, about }) {
+  async updateProfile({ name, about }, JWT) {
     const newProfileData = await this._request(
       `/users/me`, {
       method: 'PATCH',
-      headers: this._headers,
+      headers: {
+        Authorization: `Bearer ${JWT}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         name: name,
         about: about
@@ -60,11 +71,14 @@ class Api {
     return newProfileData
   }
 
-  async updateAvatar({ avatar }) {
+  async updateAvatar({ avatar }, JWT) {
     const newAvatar = await this._request(
       `/users/me/avatar`, {
       method: 'PATCH',
-      headers: this._headers,
+      headers: {
+        Authorization: `Bearer ${JWT}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         avatar: avatar
       })
@@ -72,40 +86,45 @@ class Api {
     return newAvatar
   }
 
-  async changeLikeCardStatus(cardId, isLiked) {
+  async changeLikeCardStatus(cardId, isLiked, JWT) {
     if (isLiked) {
       const deleteLike = await this._request(
         `/cards/${cardId}/likes`, {
         method: 'DELETE',
-        headers: this._headers
+        headers: {
+          Authorization: `Bearer ${JWT}`,
+          'Content-Type': 'application/json'
+        }
       })
       return deleteLike
     } else {
       const putLike = await this._request(
         `/cards/${cardId}/likes`, {
         method: 'PUT',
-        headers: this._headers
+        headers: {
+          Authorization: `Bearer ${JWT}`,
+          'Content-Type': 'application/json'
+        }
       })
       return putLike
     }
   }
 
-  async deleteCard(cardId) {
+  async deleteCard(cardId, JWT) {
     const cardDelete = await this._request(
       `/cards/${cardId}`, {
       method: 'DELETE',
-      headers: this._headers
+      headers: {
+        Authorization: `Bearer ${JWT}`,
+        'Content-Type': 'application/json'
+      }
     })
     return cardDelete
   }
 }
 
-const api = new Api( {
-  baseUrl: 'https://mesto.nomoreparties.co/v1/cohort-68',
-  headers: {
-    authorization: 'cad6e116-edab-4c4b-8149-8b724d78ff63',
-    'Content-Type': 'application/json' 
-  }
+const api = new Api({
+  baseUrl: 'http://localhost:3000'
 })
 
-export default api
+export default api;

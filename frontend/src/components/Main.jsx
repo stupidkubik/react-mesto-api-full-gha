@@ -16,7 +16,7 @@ function Main({
   handleExit,
 }) {
   const currentUser = useContext(CurrentUserContext);
-  const { userLogin } = useContext(LoginUserContext);
+  const { userLogin = 'user' } = useContext(LoginUserContext);
 
   return (
     <>

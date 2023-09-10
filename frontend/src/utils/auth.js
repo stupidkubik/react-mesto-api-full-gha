@@ -46,18 +46,8 @@ class Auth {
 }
 
 const auth = new Auth({
-  baseUrl: 'https://auth.nomoreparties.co',
+  baseUrl: 'http://localhost:3000',
 });
 
 export default auth;
 
-// {
-//   "data": {
-//       "_id": "64bfcf5f36ce0c001a421194",
-//       "email": "asasas@asd.asd"
-//   }
-// }
-
-// {
-//   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGJmY2Y1ZjM2Y2UwYzAwMWE0MjExOTQiLCJpYXQiOjE2OTAyOTIxODh9.es42kcCYNjbeu1iJb75xaSh-Hmt6E4vTTCHiKNIwF_Y"
-// }

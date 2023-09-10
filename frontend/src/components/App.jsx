@@ -46,8 +46,8 @@ function App() {
   // Константа с путями
   const Paths = {
     Home: '/',
-    Login: '/sign-in',
-    SignUp: '/sign-up',
+    Login: '/signin',
+    SignUp: '/signup',
   };
 
   const navigate = useNavigate();
@@ -63,9 +63,11 @@ function App() {
 
   useEffect(() => {
     if (isLoggedIn) {
+      const jwt = localStorage.getItem('jwt');
+
       Promise.all([
-        api.getCards(), // Запрашиваем массив карточек с сервера
-        api.getUserInfo(), // Запрашиваем данные юзера
+        api.getCards(jwt), // Запрашиваем массив карточек с сервера
+        api.getUserInfo(jwt), // Запрашиваем данные юзера
       ])
         .then(([cardsData, user]) => {
           setCurrentUser(user);
@@ -94,7 +96,8 @@ function App() {
     auth
       .signUp(inputValues)
       .then((res) => {
-        setUserLogin(res.data);
+        console.log('auth:', res);
+        setUserLogin(res);
         setTooltipInfo({
           popupTitle: 'Вы успешно зарегистрировались!',
           cssClass: 'popup__info-success',
@@ -120,10 +123,11 @@ function App() {
     evt.preventDefault();
     function makeRequest() {
       return auth.signIn(inputValues).then((res) => {
+        console.log('login:', res);
         if (res.token) {
           setIsLoggedIn(true);
           localStorage.setItem('jwt', res.token);
-          navigate(Paths.Home);
+          checkToken(res.token)
         }
       });
     }
@@ -134,7 +138,8 @@ function App() {
   function checkToken(jwt) {
     function makeRequest() {
       return auth.checkToken(jwt).then((res) => {
-        setUserLogin(res.data);
+        console.log('checkToken:', res);
+        setUserLogin(res);
         setIsLoggedIn(true);
         navigate(Paths.Home);
       });
@@ -158,7 +163,9 @@ function App() {
   function handleEditProfileSubmit(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
-      return api.updateProfile(inputValues).then(setCurrentUser);
+      const jwt = localStorage.getItem('jwt');
+
+      return api.updateProfile(inputValues, jwt).then(setCurrentUser);
     }
     handleSubmit(makeRequest);
   }
@@ -171,7 +178,9 @@ function App() {
   function handleAddPlaceSubmit(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
-      return api.postCard(inputValues).then((newCard) => {
+      const jwt = localStorage.getItem('jwt');
+
+      return api.postCard(inputValues, jwt).then((newCard) => {
         setCards([newCard, ...cards]);
       });
     }
@@ -186,7 +195,9 @@ function App() {
   function handleAvatarSubmit(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
-      return api.updateAvatar(inputValues).then(setCurrentUser);
+      const jwt = localStorage.getItem('jwt');
+
+      return api.updateAvatar(inputValues, jwt).then(setCurrentUser);
     }
     handleSubmit(makeRequest);
   }
@@ -197,7 +208,9 @@ function App() {
       // Если попап уже открыт
       evt.preventDefault();
       function makeRequest() {
-        return api.deleteCard(deletedCardId).then(() => {
+        const jwt = localStorage.getItem('jwt');
+
+        return api.deleteCard(deletedCardId, jwt).then(() => {
           setCards((cards) => cards.filter((c) => c._id !== deletedCardId));
         });
       }
@@ -219,7 +232,9 @@ function App() {
   function handleCardLike(card) {
     const isLiked = card.likes.some((i) => i._id === currentUser._id);
     function makeRequest() {
-      return api.changeLikeCardStatus(card._id, isLiked).then((newCard) => {
+      const jwt = localStorage.getItem('jwt');
+
+      return api.changeLikeCardStatus(card._id, isLiked, jwt).then((newCard) => {
         setCards((state) =>
           state.map((c) => (c._id === card._id ? newCard : c))
         );
