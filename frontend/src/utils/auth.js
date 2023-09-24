@@ -4,8 +4,6 @@ class Auth {
   }
 
   _request(url, options) {
-    console.log('_baseUrl: ', this._baseUrl);
-    console.log('url: ', url);
     return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse);
   }
 

@@ -18,6 +18,7 @@ module.exports = (req, res, next) => {
 
   try {
     payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : DEV_KEY);
+    console.log(NODE_ENV);
   } catch (err) {
     throw new UnauthorizedError('Problem with token');
   }
