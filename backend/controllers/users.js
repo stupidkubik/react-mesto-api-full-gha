@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const { SALT_ROUNDS = 10, JWT_SECRET = 'string' } = process.env;
+const { SALT_ROUNDS = 10, JWT_SECRET } = process.env;
 
 const {
   HTTP_STATUS_OK,

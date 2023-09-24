@@ -9,7 +9,7 @@
 
 ## Ссылки на проект
 
-IP-адрес 62.84.125.182
+IP 62.84.125.182
 
 Frontend https://stupid.kubik.nomoredomainsrocks.ru
 
