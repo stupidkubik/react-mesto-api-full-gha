@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const { SALT_ROUNDS = 10, JWT_SECRET = 'string' } = process.env;
+const { SALT_ROUNDS = 10, JWT_SECRET = 'string', NODE_ENV } = process.env;
+const DEV_KEY = 'string';
 
 const {
   HTTP_STATUS_OK,
@@ -48,7 +49,11 @@ const LoginUser = (req, res, next) => {
 
   userModel.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : DEV_KEY,
+        { expiresIn: '7d' },
+      );
       res.status(HTTP_STATUS_OK).send({ token });
     })
     .catch((err) => {

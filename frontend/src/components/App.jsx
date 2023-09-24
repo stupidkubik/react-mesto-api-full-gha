@@ -96,7 +96,6 @@ function App() {
     auth
       .signUp(inputValues)
       .then((res) => {
-        console.log('auth:', res);
         setUserLogin(res);
         setTooltipInfo({
           popupTitle: 'Вы успешно зарегистрировались!',
@@ -123,7 +122,6 @@ function App() {
     evt.preventDefault();
     function makeRequest() {
       return auth.signIn(inputValues).then((res) => {
-        console.log('login:', res);
         if (res.token) {
           setIsLoggedIn(true);
           localStorage.setItem('jwt', res.token);
@@ -138,7 +136,6 @@ function App() {
   function checkToken(jwt) {
     function makeRequest() {
       return auth.checkToken(jwt).then((res) => {
-        console.log('checkToken:', res);
         setUserLogin(res);
         setIsLoggedIn(true);
         navigate(Paths.Home);
