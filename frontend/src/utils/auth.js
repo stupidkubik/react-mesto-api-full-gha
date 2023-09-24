@@ -46,7 +46,7 @@ class Auth {
 }
 
 const auth = new Auth({
-  baseUrl: 'http://localhost:3000',
+  baseUrl: 'https://api.stupid.kubik.nomoredomainsrocks.ru/'
 });
 
 export default auth;
