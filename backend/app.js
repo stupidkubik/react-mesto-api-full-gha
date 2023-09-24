@@ -4,11 +4,11 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-// const cors = require('cors');
+const cors = require('cors');
 
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const cors = require('./middlewares/cors');
+// const cors = require('./middlewares/cors');
 const error = require('./middlewares/error');
 const router = require('./routes');
 
@@ -28,8 +28,8 @@ mongoose
 
 const app = express();
 
-// app.use(cors());
-app.use(cors);
+app.use(cors());
+// app.use(cors);
 
 app.disable('x-powered-by');
 app.use(helmet());
