@@ -18,7 +18,10 @@ class Auth {
   async signUp({ password, email }) {
     const regData = await this._request(`/signup`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: '',
+      },
       body: JSON.stringify({ password: password, email: email }),
     });
     return regData;
@@ -27,7 +30,10 @@ class Auth {
   async signIn({ password, email }) {
     const token = await this._request(`/signin`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: '',
+      },
       body: JSON.stringify({ password: password, email: email }),
     });
     return token;
