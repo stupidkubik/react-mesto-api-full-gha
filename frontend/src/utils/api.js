@@ -3,6 +3,18 @@ class Api {
     this._baseUrl = baseUrl
   }
 
+  _getHeaders() {
+    const jwt = localStorage.getItem('jwt')
+
+    if (jwt) {
+      return {
+        Authorization: `Bearer ${jwt}`,
+        'Content-Type': 'application/json'
+      }
+    }
+    return {}
+  }
+
   _request(url, options) {
     return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse)
   }
@@ -15,38 +27,29 @@ class Api {
     }
   }
 
-  async getUserInfo(JWT) {
+  async getUserInfo() {
     const idData = await this._request(
       `/users/me`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
-      }
+      headers: this._getHeaders()
     })
     return idData
   }
 
-  async getCards(JWT) {
+  async getCards() {
     const cardsData = await this._request(
       `/cards`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
-      }
+      headers: this._getHeaders()
     })
     return cardsData
   }
 
-  async postCard({ title, link }, JWT) {
+  async postCard({ title, link }) {
     const newCardData = await this._request(
       `/cards`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
-      },
+      headers: this._getHeaders(),
       body: JSON.stringify({
         name: title,
         link: link
@@ -55,14 +58,11 @@ class Api {
     return newCardData
   }
 
-  async updateProfile({ name, about }, JWT) {
+  async updateProfile({ name, about }) {
     const newProfileData = await this._request(
       `/users/me`, {
       method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
-      },
+      headers: this._getHeaders(),
       body: JSON.stringify({
         name: name,
         about: about
@@ -71,14 +71,11 @@ class Api {
     return newProfileData
   }
 
-  async updateAvatar({ avatar }, JWT) {
+  async updateAvatar({ avatar }) {
     const newAvatar = await this._request(
       `/users/me/avatar`, {
       method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
-      },
+      headers: this._getHeaders(),
       body: JSON.stringify({
         avatar: avatar
       })
@@ -86,38 +83,29 @@ class Api {
     return newAvatar
   }
 
-  async changeLikeCardStatus(cardId, isLiked, JWT) {
+  async changeLikeCardStatus(cardId, isLiked) {
     if (isLiked) {
       const deleteLike = await this._request(
         `/cards/${cardId}/likes`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${JWT}`,
-          'Content-Type': 'application/json'
-        }
+        headers: this._getHeaders()
       })
       return deleteLike
     } else {
       const putLike = await this._request(
         `/cards/${cardId}/likes`, {
         method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${JWT}`,
-          'Content-Type': 'application/json'
-        }
+        headers: this._getHeaders()
       })
       return putLike
     }
   }
 
-  async deleteCard(cardId, JWT) {
+  async deleteCard(cardId) {
     const cardDelete = await this._request(
       `/cards/${cardId}`, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
-      }
+      headers: this._getHeaders()
     })
     return cardDelete
   }
