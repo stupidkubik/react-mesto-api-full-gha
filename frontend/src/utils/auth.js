@@ -16,7 +16,7 @@ class Auth {
   }
 
   async signUp({ password, email }) {
-    const regData = await this._request(`signup`, {
+    const regData = await this._request(`/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ class Auth {
   }
 
   async signIn({ password, email }) {
-    const token = await this._request(`signin`, {
+    const token = await this._request(`/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
