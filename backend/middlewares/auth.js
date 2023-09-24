@@ -3,7 +3,8 @@ const UnauthorizedError = require('../errors/UnauthorizedError');
 
 require('dotenv').config();
 
-const { JWT_SECRET = 'string' } = process.env;
+const { JWT_SECRET, NODE_ENV } = process.env;
+const DEV_KEY = 'string';
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -16,7 +17,7 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, JWT_SECRET);
+    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : DEV_KEY);
   } catch (err) {
     throw new UnauthorizedError('Bad token');
   }
