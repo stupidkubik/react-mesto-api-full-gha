@@ -124,7 +124,7 @@ class Api {
 }
 
 const api = new Api({
-  baseUrl: 'https://api.stupid.kubik.nomoredomainsrocks.ru/'
+  baseUrl: 'https://api.stupid.kubik.nomoredomainsrocks.ru'
 })
 
 export default api;
