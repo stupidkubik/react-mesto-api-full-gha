@@ -4,6 +4,8 @@ class Api {
   }
 
   _request(url, options) {
+    console.log('_baseUrl: ', this._baseUrl);
+    console.log('url: ', url);
     return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse)
   }
 
@@ -20,10 +22,12 @@ class Api {
       `/users/me`, {
       method: 'GET',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
       }
     })
+    console.log('idData:', idData)
+
     return idData
   }
 
@@ -32,10 +36,12 @@ class Api {
       `/cards`, {
       method: 'GET',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
       }
     })
+    console.log('cardsData:', cardsData)
+
     return cardsData
   }
 
@@ -44,8 +50,8 @@ class Api {
       `/cards`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         name: title,
@@ -60,8 +66,8 @@ class Api {
       `/users/me`, {
       method: 'PATCH',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         name: name,
@@ -76,8 +82,8 @@ class Api {
       `/users/me/avatar`, {
       method: 'PATCH',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         avatar: avatar
@@ -92,8 +98,8 @@ class Api {
         `/cards/${cardId}/likes`, {
         method: 'DELETE',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${JWT}`,
-          'Content-Type': 'application/json'
         }
       })
       return deleteLike
@@ -102,8 +108,8 @@ class Api {
         `/cards/${cardId}/likes`, {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${JWT}`,
-          'Content-Type': 'application/json'
         }
       })
       return putLike
@@ -115,8 +121,8 @@ class Api {
       `/cards/${cardId}`, {
       method: 'DELETE',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${JWT}`,
-        'Content-Type': 'application/json'
       }
     })
     return cardDelete
