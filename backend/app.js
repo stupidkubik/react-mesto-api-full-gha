@@ -8,7 +8,6 @@ const cors = require('cors');
 
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-// const cors = require('./middlewares/cors');
 const error = require('./middlewares/error');
 const router = require('./routes');
 
@@ -26,10 +25,15 @@ mongoose
     useNewUrlParser: true,
   });
 
+const corsOptions = {
+  origin: 'http://localhost:3001',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+};
+
 const app = express();
 
-app.use(cors());
-// app.use(cors);
+app.use(cors(corsOptions));
 
 app.disable('x-powered-by');
 app.use(helmet());

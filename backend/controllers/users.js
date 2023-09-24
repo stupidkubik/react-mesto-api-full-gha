@@ -49,6 +49,7 @@ const LoginUser = (req, res, next) => {
 
   userModel.findUserByCredentials(email, password)
     .then((user) => {
+      console.log('user:', user);
       const token = jwt.sign(
         { _id: user._id },
         NODE_ENV === 'production' ? JWT_SECRET : DEV_KEY,

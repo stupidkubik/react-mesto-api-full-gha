@@ -18,6 +18,7 @@ class Api {
   }
 
   async getUserInfo(JWT) {
+    console.log(JWT);
     const idData = await this._request(
       `/users/me`, {
       method: 'GET',
@@ -32,6 +33,8 @@ class Api {
   }
 
   async getCards(JWT) {
+    console.log(JWT);
+
     const cardsData = await this._request(
       `/cards`, {
       method: 'GET',
@@ -46,6 +49,8 @@ class Api {
   }
 
   async postCard({ title, link }, JWT) {
+    console.log(JWT);
+
     const newCardData = await this._request(
       `/cards`, {
       method: 'POST',

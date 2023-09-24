@@ -42,6 +42,7 @@ class Auth {
   }
 
   async checkToken(JWT) {
+    console.log(JWT);
     const userData = await this._request(`/users/me`, {
       method: 'GET',
       headers: {
