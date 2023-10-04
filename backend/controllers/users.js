@@ -45,6 +45,7 @@ const createUser = (req, res, next) => {
 
 const LoginUser = (req, res, next) => {
   const { email, password } = req.body;
+  console.log('empty?:', email, password);
   if (!email || !password) throw new BadRequestError('Email и password не могут быть пустыми');
 
   userModel.findUserByCredentials(email, password)

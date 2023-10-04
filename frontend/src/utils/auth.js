@@ -20,7 +20,7 @@ class Auth {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: '',
+        'Authorization': '',
       },
       body: JSON.stringify({ password: password, email: email }),
     });
@@ -32,7 +32,7 @@ class Auth {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: '',
+        'Authorization': '',
       },
       body: JSON.stringify({ password: password, email: email }),
     });
@@ -45,7 +45,7 @@ class Auth {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${JWT}`,
+        'Authorization': `Bearer ${JWT}`,
       },
     });
     console.log('userData:', userData)

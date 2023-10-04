@@ -22,7 +22,7 @@ class Api {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${JWT}`,
+        'Authorization': `Bearer ${JWT}`,
       }
     })
     console.log('idData:', idData)
@@ -38,7 +38,7 @@ class Api {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${JWT}`,
+        'Authorization': `Bearer ${JWT}`,
       }
     })
     console.log('cardsData:', cardsData)
@@ -54,7 +54,7 @@ class Api {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${JWT}`,
+        'Authorization': `Bearer ${JWT}`,
       },
       body: JSON.stringify({
         name: title,
@@ -70,7 +70,7 @@ class Api {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${JWT}`,
+        'Authorization': `Bearer ${JWT}`,
       },
       body: JSON.stringify({
         name: name,
@@ -86,7 +86,7 @@ class Api {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${JWT}`,
+        'Authorization': `Bearer ${JWT}`,
       },
       body: JSON.stringify({
         avatar: avatar
@@ -102,7 +102,7 @@ class Api {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${JWT}`,
+          'Authorization': `Bearer ${JWT}`,
         }
       })
       return deleteLike
@@ -112,7 +112,7 @@ class Api {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${JWT}`,
+          'Authorization': `Bearer ${JWT}`,
         }
       })
       return putLike
@@ -125,7 +125,7 @@ class Api {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${JWT}`,
+        'Authorization': `Bearer ${JWT}`,
       }
     })
     return cardDelete
