@@ -64,6 +64,7 @@ function App() {
   useEffect(() => {
     if (isLoggedIn) {
       const jwt = localStorage.getItem('jwt');
+      console.log('useEffect = ', jwt)
 
       Promise.all([
         api.getCards(jwt), // Запрашиваем массив карточек с сервера
@@ -126,6 +127,7 @@ function App() {
           setIsLoggedIn(true);
           localStorage.setItem('jwt', res.token);
           checkToken(res.token)
+          console.log('isLoggedIn = ', isLoggedIn);
         }
       });
     }
@@ -136,6 +138,7 @@ function App() {
   function checkToken(jwt) {
     function makeRequest() {
       return auth.checkToken(jwt).then((res) => {
+        console.log('checkToken done');
         setUserLogin(res);
         setIsLoggedIn(true);
         navigate(Paths.Home);
