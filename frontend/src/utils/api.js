@@ -3,11 +3,8 @@ class Api {
     this._baseUrl = baseUrl
   }
 
-  _request(url, options) {
-    return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse)
-  }
-
   _checkResponse(res) {
+    console.log('_checkResponse = ', res);
     if (res.ok) {
       return res.json();
     } else {
@@ -15,13 +12,15 @@ class Api {
     }
   }
 
+  _request(url, options) {
+    return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse)
+  }
+
   async getUserInfo(JWT) {
     console.log(JWT);
     const idData = await this._request(
       `/users/me`, {
-      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${JWT}`,
       }
     })
@@ -35,9 +34,7 @@ class Api {
 
     const cardsData = await this._request(
       `/cards`, {
-      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${JWT}`,
       }
     })
