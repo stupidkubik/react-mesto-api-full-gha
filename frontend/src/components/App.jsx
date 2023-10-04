@@ -123,6 +123,7 @@ function App() {
     evt.preventDefault();
     function makeRequest() {
       return auth.signIn(inputValues).then((res) => {
+        console.log('res =', res);
         if (res.token) {
           setIsLoggedIn(true);
           localStorage.setItem('jwt', res.token);
