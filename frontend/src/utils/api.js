@@ -18,7 +18,7 @@ class Api {
       method: `${method}`,
       headers: { ...this._headers, authorization: `Bearer ${localStorage.getItem('token')}` },
       body: body,
-      credentials: 'include',
+      // credentials: 'include',
     }).then(this._checkResponse)
   }
 
