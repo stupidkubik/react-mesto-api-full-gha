@@ -1,6 +1,7 @@
 class Api {
-  constructor({ baseUrl }) {
-    this._baseUrl = baseUrl
+  constructor({ baseUrl, headers }) {
+    this._baseUrl = baseUrl;
+    this._headers = headers;
   }
 
   _checkResponse(res) {
@@ -12,125 +13,82 @@ class Api {
     }
   }
 
-  _request(url, options) {
-    return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse)
+  _request(url, method, body) {
+    return fetch(`${this._baseUrl}${url}`, {
+      method: `${method}`,
+      headers: { ...this._headers, authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: body,
+      credentials: 'include',
+    }).then(this._checkResponse)
   }
 
-  async getUserInfo(JWT) {
-    console.log(JWT);
-    const idData = await this._request(
-      `/users/me`, {
-      headers: {
-        'Authorization': `Bearer ${JWT}`,
-      }
-    })
+  async getUserInfo() {
+    const idData = await this._request(`/users/me`, 'GET')
     console.log('idData:', idData)
 
     return idData
   }
 
-  async getCards(JWT) {
-    console.log(JWT);
-
-    const cardsData = await this._request(
-      `/cards`, {
-      headers: {
-        'Authorization': `Bearer ${JWT}`,
-      }
-    })
+  async getCards() {
+    const cardsData = await this._request(`/cards`, 'GET')
     console.log('cardsData:', cardsData)
 
     return cardsData
   }
 
-  async postCard({ title, link }, JWT) {
-    console.log(JWT);
-
+  async postCard({ title, link }) {
     const newCardData = await this._request(
-      `/cards`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JWT}`,
-      },
-      body: JSON.stringify({
+      `/cards`,
+      'POST',
+      JSON.stringify({
         name: title,
         link: link
-      })
-    })
+      }))
+
     return newCardData
   }
 
-  async updateProfile({ name, about }, JWT) {
+  async updateProfile({ name, about }) {
     const newProfileData = await this._request(
-      `/users/me`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JWT}`,
-      },
-      body: JSON.stringify({
+      `/users/me`, 'PATCH',
+      JSON.stringify({
         name: name,
         about: about
-      })
-    })
+      }))
+
     return newProfileData
   }
 
-  async updateAvatar({ avatar }, JWT) {
+  async updateAvatar({ avatar }) {
     const newAvatar = await this._request(
-      `/users/me/avatar`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JWT}`,
-      },
-      body: JSON.stringify({
+      `/users/me/avatar`, 'PATCH',
+      JSON.stringify({
         avatar: avatar
-      })
-    })
+      }))
     return newAvatar
   }
 
-  async changeLikeCardStatus(cardId, isLiked, JWT) {
+  async changeLikeCardStatus(cardId, isLiked) {
     if (isLiked) {
-      const deleteLike = await this._request(
-        `/cards/${cardId}/likes`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${JWT}`,
-        }
-      })
+      const deleteLike = await this._request(`/cards/${cardId}/likes`, 'DELETE')
       return deleteLike
     } else {
-      const putLike = await this._request(
-        `/cards/${cardId}/likes`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${JWT}`,
-        }
-      })
+      const putLike = await this._request(`/cards/${cardId}/likes`, 'PUT')
       return putLike
     }
   }
 
   async deleteCard(cardId, JWT) {
-    const cardDelete = await this._request(
-      `/cards/${cardId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JWT}`,
-      }
-    })
+    const cardDelete = await this._request(`/cards/${cardId}`, 'DELETE')
     return cardDelete
   }
 }
 
 const api = new Api({
-  baseUrl: 'https://api.stupid.kubik.nomoredomainsrocks.ru'
+  baseUrl: 'https://api.stupid.kubik.nomoredomainsrocks.ru',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
 
 export default api;
