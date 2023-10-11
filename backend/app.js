@@ -27,7 +27,7 @@ mongoose
 const corsOptions = {
   origin: 'https://stupid.kubik.nomoredomainsrocks.ru',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+  allowedHeaders: 'Access-Control-Allow-Origin, Origin, X-Requested-With, Content-Type, Accept, Authorization',
   credentials: true,
 };
 
