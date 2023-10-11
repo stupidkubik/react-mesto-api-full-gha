@@ -1,7 +1,6 @@
 class Auth {
-  constructor({ baseUrl, headers }) {
+  constructor({ baseUrl }) {
     this._baseUrl = baseUrl;
-    this._headers = headers;
   }
 
   _checkResponse(res) {
@@ -12,42 +11,42 @@ class Auth {
     }
   }
 
-  _request(url, method, body) {
-    return fetch(`${this._baseUrl}${url}`, {
-      method: `${method}`,
-      headers: { ...this._headers, authorization: `Bearer ${localStorage.getItem('token')}` },
-      body: body,
-      // credentials: 'include',
-    }).then(this._checkResponse)
+  _request(url, options) {
+    return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse);
   }
 
   async signUp({ password, email }) {
-    const regData = await this._request(`/signup`,
-      'POST',
-      JSON.stringify({ password: password, email: email }));
+    const regData = await this._request(`/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password, email: email }),
+    });
     return regData;
   }
 
   async signIn({ password, email }) {
-    const token = await this._request(`/signin`,
-      'POST',
-      JSON.stringify({ password: password, email: email }));
+    const token = await this._request(`/signin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password, email: email }),
+    });
     return token;
   }
 
   async checkToken(JWT) {
-    console.log(JWT);
-    const userData = await this._request(`/users/me`, 'GET');
-    console.log('userData:', userData)
+    const userData = await this._request(`/users/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${JWT}`,
+      },
+    });
     return userData;
   }
 }
 
 const auth = new Auth({
   baseUrl: 'https://api.stupid.kubik.nomoredomainsrocks.ru',
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export default auth;

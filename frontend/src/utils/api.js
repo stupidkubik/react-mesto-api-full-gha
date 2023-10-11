@@ -18,21 +18,16 @@ class Api {
       method: `${method}`,
       headers: { ...this._headers, authorization: `Bearer ${localStorage.getItem('token')}` },
       body: body,
-      // credentials: 'include',
     }).then(this._checkResponse)
   }
 
   async getUserInfo() {
     const idData = await this._request(`/users/me`, 'GET')
-    console.log('idData:', idData)
-
     return idData
   }
 
   async getCards() {
     const cardsData = await this._request(`/cards`, 'GET')
-    console.log('cardsData:', cardsData)
-
     return cardsData
   }
 
@@ -50,7 +45,8 @@ class Api {
 
   async updateProfile({ name, about }) {
     const newProfileData = await this._request(
-      `/users/me`, 'PATCH',
+      `/users/me`,
+      'PATCH',
       JSON.stringify({
         name: name,
         about: about
@@ -61,10 +57,12 @@ class Api {
 
   async updateAvatar({ avatar }) {
     const newAvatar = await this._request(
-      `/users/me/avatar`, 'PATCH',
+      `/users/me/avatar`,
+      'PATCH',
       JSON.stringify({
         avatar: avatar
       }))
+
     return newAvatar
   }
 
