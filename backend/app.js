@@ -34,11 +34,11 @@ const app = express();
 
 app.use(cors(corsOptions));
 
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
+// app.get('/crash-test', () => {
+//   setTimeout(() => {
+//     throw new Error('Сервер сейчас упадёт');
+//   }, 0);
+// });
 
 app.disable('x-powered-by');
 app.use(helmet());

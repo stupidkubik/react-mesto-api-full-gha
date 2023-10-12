@@ -76,7 +76,7 @@ class Api {
     }
   }
 
-  async deleteCard(cardId, JWT) {
+  async deleteCard(cardId) {
     const cardDelete = await this._request(`/cards/${cardId}`, 'DELETE')
     return cardDelete
   }

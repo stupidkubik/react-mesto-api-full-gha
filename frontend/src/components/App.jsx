@@ -63,12 +63,9 @@ function App() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      const jwt = localStorage.getItem('token');
-      console.log('useEffect = ', jwt)
-
       Promise.all([
-        api.getCards(jwt), // Запрашиваем массив карточек с сервера
-        api.getUserInfo(jwt), // Запрашиваем данные юзера
+        api.getCards(), // Запрашиваем массив карточек с сервера
+        api.getUserInfo(), // Запрашиваем данные юзера
       ])
         .then(([cardsData, user]) => {
           setCurrentUser(user);
@@ -123,12 +120,10 @@ function App() {
     evt.preventDefault();
     function makeRequest() {
       return auth.signIn(inputValues).then((res) => {
-        console.log('res =', res);
         if (res.token) {
           setIsLoggedIn(true);
           localStorage.setItem('token', res.token);
           checkToken(res.token)
-          console.log('isLoggedIn = ', isLoggedIn);
         }
       });
     }
@@ -139,7 +134,6 @@ function App() {
   function checkToken(jwt) {
     function makeRequest() {
       return auth.checkToken(jwt).then((res) => {
-        console.log('checkToken done');
         setUserLogin(res);
         setIsLoggedIn(true);
         navigate(Paths.Home);
@@ -164,8 +158,6 @@ function App() {
   function handleEditProfileSubmit(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
-      // const jwt = localStorage.getItem('token');
-
       return api.updateProfile(inputValues).then(setCurrentUser);
     }
     handleSubmit(makeRequest);
@@ -179,8 +171,6 @@ function App() {
   function handleAddPlaceSubmit(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
-      // const jwt = localStorage.getItem('token');
-
       return api.postCard(inputValues).then((newCard) => {
         setCards([newCard, ...cards]);
       });
@@ -196,8 +186,6 @@ function App() {
   function handleAvatarSubmit(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
-      // const jwt = localStorage.getItem('token');
-
       return api.updateAvatar(inputValues).then(setCurrentUser);
     }
     handleSubmit(makeRequest);
@@ -209,8 +197,6 @@ function App() {
       // Если попап уже открыт
       evt.preventDefault();
       function makeRequest() {
-        // const jwt = localStorage.getItem('token');
-
         return api.deleteCard(deletedCardId).then(() => {
           setCards((cards) => cards.filter((c) => c._id !== deletedCardId));
         });
@@ -233,8 +219,6 @@ function App() {
   function handleCardLike(card) {
     const isLiked = card.likes.some((i) => i._id === currentUser._id);
     function makeRequest() {
-      // const jwt = localStorage.getItem('token');
-
       return api.changeLikeCardStatus(card._id, isLiked).then((newCard) => {
         setCards((state) =>
           state.map((c) => (c._id === card._id ? newCard : c))
