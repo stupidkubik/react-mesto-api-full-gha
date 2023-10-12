@@ -15,23 +15,23 @@ class Auth {
     return fetch(`${this._baseUrl}${url}`, options).then(this._checkResponse);
   }
 
-  async signUp({ password, email }) {
-    const regData = await this._request(`/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: password, email: email }),
-    });
-    return regData;
-  }
+  // async signUp({ password, email }) {
+  //   const regData = await this._request(`/signup`, {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ password: password, email: email }),
+  //   });
+  //   return regData;
+  // }
 
-  async signIn({ password, email }) {
-    const token = await this._request(`/signin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: password, email: email }),
-    });
-    return token;
-  }
+  // async signIn({ password, email }) {
+  //   const token = await this._request(`/signin`, {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ password: password, email: email }),
+  //   });
+  //   return token;
+  // }
 
   async checkToken(JWT) {
     const userData = await this._request(`/users/me`, {

@@ -20,6 +20,35 @@ class Api {
     }).then(this._checkResponse)
   }
 
+  async signUp({ password, email }) {
+    const regData = await this._request(
+      `/signup`,
+      'POST',
+      JSON.stringify({
+        password: password,
+        email: email
+      }))
+
+    return regData
+  }
+
+  async signIn({ password, email }) {
+    const token = await this._request(
+      `/signin`,
+      'POST',
+      JSON.stringify({
+        password: password,
+        email: email
+      }))
+
+    return token
+  }
+
+  // async checkToken(JWT) {
+  //   const userData = await this._request(`/users/me`, 'GET');
+  //   return userData
+  // }
+
   async getUserInfo() {
     const idData = await this._request(`/users/me`, 'GET')
     return idData

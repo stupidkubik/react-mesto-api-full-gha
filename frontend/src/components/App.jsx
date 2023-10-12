@@ -91,7 +91,7 @@ function App() {
     evt.preventDefault();
     setIsLoading(true);
 
-    auth
+    api
       .signUp(inputValues)
       .then((res) => {
         setUserLogin(res);
@@ -119,7 +119,7 @@ function App() {
   function handleLogin(evt, inputValues) {
     evt.preventDefault();
     function makeRequest() {
-      return auth.signIn(inputValues).then((res) => {
+      return api.signIn(inputValues).then((res) => {
         if (res.token) {
           setIsLoggedIn(true);
           localStorage.setItem('token', res.token);
