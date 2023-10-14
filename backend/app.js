@@ -24,15 +24,16 @@ mongoose
     useNewUrlParser: true,
   });
 
-const corsOptions = {
-  origin: 'https://stupid.kubik.nomoredomainsrocks.ru',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-};
+// const corsOptions = {
+//   origin: 'https://stupid.kubik.nomoredomainsrocks.ru',
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+// };
 
 const app = express();
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+app.use(cors());
 
 app.get('/crash-test', () => {
   setTimeout(() => {
