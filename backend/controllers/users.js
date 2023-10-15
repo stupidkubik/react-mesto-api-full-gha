@@ -20,9 +20,9 @@ const createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!email || !password) throw new BadRequestError('Email и password не могут быть пустыми');
+  // if (!email || !password) throw new BadRequestError('Email и password не могут быть пустыми');
 
-  bcrypt.hash(password, SALT_ROUNDS)
+  return bcrypt.hash(password, SALT_ROUNDS)
     .then((hash) => userModel.create({
       name, about, avatar, email, password: hash,
     })
@@ -45,7 +45,8 @@ const createUser = (req, res, next) => {
 
 const LoginUser = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) throw new BadRequestError('Email и password не могут быть пустыми');
+
+  // if (!email || !password) throw new BadRequestError('Email и password не могут быть пустыми');
 
   userModel.findUserByCredentials(email, password)
     .then((user) => {
