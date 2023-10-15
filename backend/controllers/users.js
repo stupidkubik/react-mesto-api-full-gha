@@ -1,8 +1,10 @@
+require('dotenv').config();
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const { SALT_ROUNDS = 10, JWT_SECRET, NODE_ENV } = process.env;
+const { SALT_ROUNDS, JWT_SECRET, NODE_ENV } = process.env;
 const DEV_KEY = 'string';
 
 const {
