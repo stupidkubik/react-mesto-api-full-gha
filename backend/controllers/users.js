@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const { SALT_ROUNDS, JWT_SECRET, NODE_ENV } = process.env;
+const { JWT_SECRET, NODE_ENV } = process.env;
 const DEV_KEY = 'string';
+const SALT_ROUNDS = 10;
 
 const {
   HTTP_STATUS_OK,
@@ -21,8 +22,6 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
-  // if (!email || !password) throw new BadRequestError('Email и password не могут быть пустыми');
 
   return bcrypt.hash(password, SALT_ROUNDS)
     .then((hash) => userModel.create({
@@ -42,13 +41,12 @@ const createUser = (req, res, next) => {
           next(new BadRequestError(err.message));
         }
         next(err);
-      }));
+      }))
+    .catch(next);
 };
 
 const LoginUser = (req, res, next) => {
   const { email, password } = req.body;
-
-  // if (!email || !password) throw new BadRequestError('Email и password не могут быть пустыми');
 
   userModel.findUserByCredentials(email, password)
     .then((user) => {
