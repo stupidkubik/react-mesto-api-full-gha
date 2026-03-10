@@ -1,0 +1,12 @@
+{
+  "name": "react-mesto-api-full-gha",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Root tooling skeleton for the react-mesto-api-full-gha modernization workspace.",
+  "scripts": {
+    "bootstrap": "npm install --prefix backend && npm install --prefix frontend",
+    "lint": "npm run lint --prefix backend --if-present && npm run lint --prefix frontend --if-present",
+    "test": "npm run test --prefix backend --if-present && npm run test --prefix frontend --if-present",
+    "build": "npm run build --prefix backend --if-present && npm run build --prefix frontend --if-present"
+  }
+}
