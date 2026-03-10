@@ -1,13 +1,12 @@
-const mongoose = require('mongoose');
 const {
   HTTP_STATUS_OK,
   HTTP_STATUS_CREATED,
 } = require('http2').constants;
 
-const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const cardModel = require('../models/card');
+const { normalizePersistenceError } = require('../src/shared/errors');
 
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
@@ -15,14 +14,11 @@ const createCard = (req, res, next) => {
     .create({ name, link, owner: req.user._id })
     .then((card) => cardModel.findById(card._id)
       .populate('owner')
-      .then(((newCard) => res.status(HTTP_STATUS_CREATED).send(newCard)))
-      .catch(() => next(new NotFoundError('Card not found'))))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        return next(new BadRequestError(err.message));
-      }
-      return next(err);
-    });
+      .orFail()
+      .then((newCard) => res.status(HTTP_STATUS_CREATED).send(newCard)))
+    .catch((err) => next(normalizePersistenceError(err, {
+      notFoundMessage: 'Card not found',
+    })));
 };
 
 const getCards = (req, res, next) => cardModel.find({})
@@ -36,20 +32,18 @@ const deleteCardById = (req, res, next) => cardModel
     if (!card) throw new NotFoundError('Card not found');
     if (!card.owner.equals(req.user._id)) throw new ForbiddenError('Invalid user');
 
-    cardModel.deleteOne(card)
+    return cardModel.deleteOne(card)
       .orFail()
       .then(() => res.status(HTTP_STATUS_OK).send({ message: 'Card is deleted' }))
-      .catch((err) => {
-        if (err instanceof mongoose.Error.DocumentNotFoundError) {
-          return next(new NotFoundError('Card not found'));
-        }
-        if (err instanceof mongoose.Error.CastError) {
-          return next(new BadRequestError('Invalid card ID'));
-        }
-        return next(err);
-      });
+      .catch((err) => next(normalizePersistenceError(err, {
+        castMessage: 'Invalid card ID',
+        notFoundMessage: 'Card not found',
+      })));
   })
-  .catch(next);
+  .catch((err) => next(normalizePersistenceError(err, {
+    castMessage: 'Invalid card ID',
+    notFoundMessage: 'Card not found',
+  })));
 
 const putLikeById = (req, res, next) => cardModel
   .findByIdAndUpdate(
@@ -60,12 +54,9 @@ const putLikeById = (req, res, next) => cardModel
   .orFail()
   .populate(['owner', 'likes'])
   .then((card) => res.status(HTTP_STATUS_OK).send(card))
-  .catch((err) => {
-    if (err instanceof mongoose.Error.DocumentNotFoundError) {
-      return next(new NotFoundError('Card not found'));
-    }
-    return next(err);
-  });
+  .catch((err) => next(normalizePersistenceError(err, {
+    notFoundMessage: 'Card not found',
+  })));
 
 const deleteLikeById = (req, res, next) => cardModel
   .findByIdAndUpdate(
@@ -76,12 +67,9 @@ const deleteLikeById = (req, res, next) => cardModel
   .orFail()
   .populate(['owner', 'likes'])
   .then((card) => res.status(HTTP_STATUS_OK).send(card))
-  .catch((err) => {
-    if (err instanceof mongoose.Error.DocumentNotFoundError) {
-      return next(new NotFoundError('Card not found'));
-    }
-    return next(err);
-  });
+  .catch((err) => next(normalizePersistenceError(err, {
+    notFoundMessage: 'Card not found',
+  })));
 
 module.exports = {
   createCard,

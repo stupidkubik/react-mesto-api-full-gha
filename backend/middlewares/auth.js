@@ -1,10 +1,6 @@
 const jwt = require('jsonwebtoken');
 const UnauthorizedError = require('../errors/UnauthorizedError');
-
-require('dotenv').config();
-
-const { JWT_SECRET, NODE_ENV } = process.env;
-const DEV_KEY = 'string';
+const { getJwtSecret } = require('../src/config');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -17,7 +13,7 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : DEV_KEY);
+    payload = jwt.verify(token, getJwtSecret());
   } catch (err) {
     throw new UnauthorizedError('Problem with token');
   }

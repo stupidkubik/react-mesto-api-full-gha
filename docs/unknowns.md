@@ -22,6 +22,8 @@ phase: preliminary baseline after Phase 1
 - Расширение first-party test suite за пределы backend contract tests.
 - Выбор стратегии backend migration: layered Express only vs Fastify/NestJS later.
 - План снятия test-only `bcrypt` mock после стабилизации native runtime dependency path.
+- Будет ли backend переводиться на TypeScript после стабилизации новой структуры слоев.
+- Нужно ли убирать file-based logging в пользу console/stdout structured logging до deploy-фазы.
 
 ## Known Current Gaps
 
@@ -32,6 +34,8 @@ phase: preliminary baseline after Phase 1
 - Access token все еще хранится в `localStorage`.
 - OpenAPI файл существует, но еще не валидируется отдельным dedicated validator step.
 - Runtime error envelope все еще legacy-only: `{ "message": "..." }`.
+- Backend routes уже собраны через новую transport/module структуру, но controllers все еще напрямую работают с Mongoose models.
+- Logging artifacts больше не светятся в git, но сама logging strategy все еще legacy file-based.
 
 ## Rule for Next Phases
 
