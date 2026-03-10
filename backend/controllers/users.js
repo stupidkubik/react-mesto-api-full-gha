@@ -1,11 +1,7 @@
-require('dotenv').config();
-
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const { JWT_SECRET, NODE_ENV } = process.env;
-const DEV_KEY = 'string';
 const SALT_ROUNDS = 10;
 
 const {
@@ -15,8 +11,9 @@ const {
 
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
-const ConflictError = require('../errors/ConflictError');
 const userModel = require('../models/user');
+const { config, getJwtSecret } = require('../src/config');
+const { normalizePersistenceError } = require('../src/shared/errors');
 
 const createUser = (req, res, next) => {
   const {
@@ -33,15 +30,9 @@ const createUser = (req, res, next) => {
         email: newUser.email,
         avatar: newUser.avatar,
       }))
-      .catch((err) => {
-        if (err.code === 11000) {
-          next(new ConflictError(`${email} already exist`));
-        }
-        if (err instanceof mongoose.Error.ValidationError) {
-          next(new BadRequestError(err.message));
-        }
-        next(err);
-      }))
+      .catch((err) => next(normalizePersistenceError(err, {
+        conflictMessage: `${email} already exist`,
+      }))))
     .catch(next);
 };
 
@@ -52,8 +43,8 @@ const LoginUser = (req, res, next) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : DEV_KEY,
-        { expiresIn: '7d' },
+        getJwtSecret(),
+        { expiresIn: config.auth.tokenExpiresIn },
       );
       res.status(HTTP_STATUS_OK).send({ token });
     })
@@ -92,15 +83,9 @@ const updateUserById = (req, res, next) => {
     )
     .orFail()
     .then((user) => res.status(HTTP_STATUS_OK).send(user))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        return next(new NotFoundError('User not found'));
-      }
-      if (err instanceof mongoose.Error.ValidationError) {
-        return next(new BadRequestError(err.message));
-      }
-      return next(err);
-    });
+    .catch((err) => next(normalizePersistenceError(err, {
+      notFoundMessage: 'User not found',
+    })));
 };
 
 const updateUserAvatarById = (req, res, next) => userModel
@@ -111,15 +96,9 @@ const updateUserAvatarById = (req, res, next) => userModel
   )
   .orFail()
   .then((user) => res.status(HTTP_STATUS_OK).send(user))
-  .catch((err) => {
-    if (err instanceof mongoose.Error.DocumentNotFoundError) {
-      return next(new NotFoundError('User not found'));
-    }
-    if (err instanceof mongoose.Error.ValidationError) {
-      return next(new BadRequestError(err.message));
-    }
-    return next(err);
-  });
+  .catch((err) => next(normalizePersistenceError(err, {
+    notFoundMessage: 'User not found',
+  })));
 
 module.exports = {
   createUser,

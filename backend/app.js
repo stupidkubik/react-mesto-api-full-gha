@@ -1,49 +1,23 @@
-require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const helmet = require('helmet');
-const cors = require('cors');
 
 const { errors } = require('celebrate');
-const { requestLogger, errorLogger } = require('./middlewares/logger');
 const error = require('./middlewares/error');
-const limiter = require('./middlewares/limiter');
-const router = require('./routes');
-
-const DEFAULT_PORT = 3000;
-const DEFAULT_DB_URL = 'mongodb://127.0.0.1:27017/mestodb';
+const { config } = require('./src/config');
+const { applyErrorMiddlewares, applyMiddlewares } = require('./src/transport/apply-middlewares');
+const { registerRoutes } = require('./src/transport/register-routes');
 
 function createApp() {
   const app = express();
 
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(cors());
-
-  app.get('/crash-test', () => {
-    setTimeout(() => {
-      throw new Error('Сервер сейчас упадёт');
-    }, 0);
-  });
-
-  app.disable('x-powered-by');
-  app.use(helmet());
-
-  app.use(requestLogger);
-  app.use(limiter);
-
-  app.use(router);
-
-  app.use(errorLogger);
-  app.use(errors());
-  app.use(error);
+  applyMiddlewares(app);
+  registerRoutes(app);
+  applyErrorMiddlewares(app, errors, error);
 
   return app;
 }
 
-async function connectToDatabase(dbUrl = process.env.DB_URL || DEFAULT_DB_URL) {
+async function connectToDatabase(dbUrl = config.database.url) {
   if (mongoose.connection.readyState !== 0) {
     return mongoose.connection;
   }
@@ -64,8 +38,8 @@ async function disconnectDatabase() {
 }
 
 async function startServer({
-  port = process.env.PORT || DEFAULT_PORT,
-  dbUrl = process.env.DB_URL || DEFAULT_DB_URL,
+  port = config.server.port,
+  dbUrl = config.database.url,
 } = {}) {
   await connectToDatabase(dbUrl);
 
@@ -92,8 +66,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  DEFAULT_PORT,
-  DEFAULT_DB_URL,
   createApp,
   connectToDatabase,
   disconnectDatabase,

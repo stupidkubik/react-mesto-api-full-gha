@@ -575,6 +575,170 @@ source: `deep-research-report (1).md` + фактический анализ те
 5. PR E: integration tests for key flows
 6. PR F: phase exit review and coverage summary
 
+## 6.3. Phase 3 Breakdown: Backend Refactor on Current Runtime
+
+`Phase 3` должен использовать safety net из `Phase 2`, а не ломать backend "по вдохновению". Сначала фиксируем целевую структуру и boundaries, потом двигаем код по слоям маленькими обратимыми шагами.
+
+### Phase 3.1: Backend Refactor Strategy and Target Structure
+
+Цель: зафиксировать, каким должен стать backend после refactor, не меняя пока доменное поведение.
+
+Задачи:
+- Утвердить, что текущий runtime остается `Express + Mongoose + CommonJS` на время `Phase 3`.
+- Зафиксировать целевую структуру модулей и общих слоев.
+- Разделить понятия:
+  - transport
+  - application/service
+  - persistence/repository
+  - config
+  - shared errors
+- Определить, какие файлы будут мигрировать первыми и какие пока остаются legacy.
+
+Выход:
+- ADR по backend refactor strategy
+- target structure document
+
+Критерии готовности:
+- есть явная схема будущей структуры backend
+- дальнейшие PR не спорят о базовой архитектуре в каждом изменении
+
+### Phase 3.2: Config Boundary
+
+Цель: убрать прямую размазанную зависимость от `process.env` и подготовить backend к валидации конфигурации.
+
+Задачи:
+- Создать единый config module.
+- Централизовать:
+  - `PORT`
+  - `DB_URL`
+  - `TEST_DB_URL`
+  - `NODE_ENV`
+  - `JWT_SECRET`
+  - CORS/rate limit settings
+- Определить safe defaults только там, где они действительно нужны.
+- Убрать прямые чтения env из middleware/controllers.
+
+Выход:
+- config module
+- backend env contract reflected in code
+
+Критерии готовности:
+- runtime config читается из одного места
+- тесты и app startup используют один и тот же config path
+
+### Phase 3.3: Error and Response Normalization Layer
+
+Цель: сделать error mapping предсказуемым, не ломая действующий runtime envelope раньше времени.
+
+Задачи:
+- Создать общий слой app errors / http mapping.
+- Исключить двойные `next(...)` и неявные ветки обработки ошибок.
+- Нормализовать обработку:
+  - celebrate validation
+  - mongoose validation
+  - mongoose cast/document not found
+  - unexpected internal errors
+- Сохранить текущий `{ "message": "..." }` envelope как runtime behavior, пока Phase 5 не изменит контракт.
+
+Выход:
+- centralized error mapping
+
+Критерии готовности:
+- routes/controllers не размазывают error semantics вручную
+- backend tests подтверждают, что current contract не сломан
+
+### Phase 3.4: Transport Cleanup
+
+Цель: привести HTTP bootstrap и middleware composition в более поддерживаемый вид.
+
+Задачи:
+- Убрать `body-parser` в пользу встроенных средств Express.
+- Упорядочить middleware pipeline:
+  - security headers
+  - parsers
+  - request logging
+  - rate limit
+  - routing
+  - error handling
+- Выделить router composition в явный boundary.
+- Решить судьбу `crash-test` route: оставить test-only или ограничить средой.
+
+Выход:
+- cleaner app bootstrap
+- reduced transport noise
+
+Критерии готовности:
+- startup file короче и понятнее
+- transport concerns не смешаны с доменной логикой сильнее, чем сейчас
+
+### Phase 3.5: Module Extraction
+
+Цель: перейти от "controllers directly talk to models" к более слоистому backend без full rewrite.
+
+Задачи:
+- Начать выносить логику в модули:
+  - `auth`
+  - `users`
+  - `cards`
+- Для каждого модуля определить:
+  - controller
+  - service
+  - repository boundary
+  - validation/contracts
+- Не менять API shape во время extraction.
+
+Выход:
+- first extracted backend modules
+
+Критерии готовности:
+- хотя бы один доменный модуль вынесен по новой схеме
+- тесты продолжают проходить
+
+### Phase 3.6: Logging and Operational Hygiene
+
+Цель: убрать очевидные legacy-проблемы эксплуатации.
+
+Задачи:
+- Пересмотреть file-based logging strategy.
+- Решить судьбу `request.log` / `error.log` в рабочем дереве.
+- Добавить более безопасный путь к structured logging.
+- Подготовить request correlation как следующий шаг, даже если сам `requestId` пока не выходит в response contract.
+
+Выход:
+- cleaned logging approach
+- reduced repo noise from runtime artifacts
+
+Критерии готовности:
+- тесты и локальный запуск не засоряют репозиторий runtime логами
+- logging strategy задокументирована
+
+### Phase 3.7: Phase 3 Exit Review
+
+Цель: формально закрыть backend refactor phase и отделить ее от будущего security/frontend work.
+
+Задачи:
+- Сверить новую backend-структуру с ADR и target structure document.
+- Проверить, что OpenAPI и backend tests все еще отражают runtime behavior.
+- Обновить `docs/unknowns.md` и coverage notes при необходимости.
+- Зафиксировать, что именно осталось на `Phase 4+`.
+
+Выход:
+- phase exit review
+
+Критерии готовности:
+- backend internals стали чище без потери contract stability
+- Phase 4 может начинаться без возврата к backend architectural baseline
+
+### Recommended PR Split for Phase 3
+
+1. PR A: backend refactor ADR + target structure
+2. PR B: config module extraction
+3. PR C: centralized error mapping
+4. PR D: transport cleanup
+5. PR E: first module extraction
+6. PR F: logging hygiene
+7. PR G: phase exit review
+
 ## 7. Implementation Order Inside the Codebase
 
 Ниже порядок, который минимизирует риск:
