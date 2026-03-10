@@ -18,17 +18,20 @@ phase: preliminary baseline after Phase 1
 - Удаление legacy `package-lock.json` и добавление `pnpm-lock.yaml`.
 - Замена hardcoded frontend API host на env-driven config.
 - Вынос CORS и rate-limit конфигурации в env-backed config module.
-- Введение OpenAPI как источника истины.
-- Появление first-party test suite вместо текущего empty/no-op test layer.
+- Валидация OpenAPI в CI и выбор инструмента проверки спецификации.
+- Расширение first-party test suite за пределы backend contract tests.
 - Выбор стратегии backend migration: layered Express only vs Fastify/NestJS later.
+- План снятия test-only `bcrypt` mock после стабилизации native runtime dependency path.
 
 ## Known Current Gaps
 
 - Новый root CI добавлен, но еще не подтвержден реальным прогоном в GitHub Actions.
-- Корневой `test` пока проходит как no-op, потому что в пакетах нет собственных test scripts.
+- Корневой `test` теперь покрывает backend suite, но frontend tests по-прежнему отсутствуют.
 - Frontend build проходит, но с предупреждениями CRA/Browserslist и warning по `react-hooks/exhaustive-deps`.
 - Frontend все еще использует hardcoded production API URL.
 - Access token все еще хранится в `localStorage`.
+- OpenAPI файл существует, но еще не валидируется отдельным dedicated validator step.
+- Runtime error envelope все еще legacy-only: `{ "message": "..." }`.
 
 ## Rule for Next Phases
 

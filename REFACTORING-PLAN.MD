@@ -380,6 +380,201 @@ source: `deep-research-report (1).md` + фактический анализ те
 5. PR E: new `ci.yml`
 6. PR F: phase exit review and docs cleanup
 
+## 6.2. Phase 2 Breakdown: OpenAPI and Backend Tests
+
+`Phase 2` не должен начинаться с "сразу пишем идеальную спецификацию". Сначала нужно зафиксировать текущее поведение API, затем привести его к явному контракту, и только потом строить вокруг него тесты и дальнейший refactor.
+
+### Phase 2.1: API Inventory and Behavior Capture
+
+Цель: собрать полный список того, что backend реально делает сейчас.
+
+Задачи:
+- Выписать все существующие маршруты из `backend/routes/*`.
+- Зафиксировать структуру request/response payloads по коду контроллеров.
+- Отдельно отметить нестабильности и неявности:
+  - разные форматы ошибок
+  - отсутствие `requestId`
+  - implicit status codes
+  - расхождения между фактическим кодом и желаемым контрактом
+- Завести рабочую mapping-таблицу "route -> current behavior -> target contract".
+
+Выход:
+- route inventory
+- current behavior matrix
+
+Критерии готовности:
+- все текущие публичные endpoints перечислены
+- для каждого endpoint понятны входы, выходы и типовые ошибки
+
+### Phase 2.2: Contract Baseline and Error Model
+
+Цель: определить, что именно считается "истиной" для API на этой фазе.
+
+Задачи:
+- Утвердить формат базового `ErrorResponse`.
+- Определить минимальный набор общих схем:
+  - `AuthTokenResponse`
+  - `User`
+  - `UserPublic`
+  - `Card`
+  - `ErrorResponse`
+- Решить, какие несоответствия текущего API сохраняются как legacy behavior, а какие исправляются сразу.
+- Зафиксировать naming convention:
+  - путь
+  - operationId
+  - schema names
+  - error codes
+
+Выход:
+- начальная contract glossary
+- agreed error model
+
+Критерии готовности:
+- понятно, как выглядят success и error responses
+- нет двусмысленности по именованию схем и операций
+
+### Phase 2.3: OpenAPI Skeleton
+
+Цель: создать минимальный, но валидный каркас спецификации, в который дальше можно безопасно добавлять детали.
+
+Задачи:
+- Создать `openapi/openapi.yaml`.
+- Описать:
+  - `openapi` version
+  - `info`
+  - `servers`
+  - `tags`
+  - `components/schemas`
+  - `components/securitySchemes`
+- Добавить базовые reusable responses для ошибок.
+
+Выход:
+- валидный skeleton OpenAPI 3.1
+
+Критерии готовности:
+- файл существует и проходит валидацию структурно
+- общие схемы и security model объявлены один раз, а не размазаны по endpoint-описаниям
+
+### Phase 2.4: Auth Contract
+
+Цель: формализовать authentication endpoints отдельно от остального домена.
+
+Задачи:
+- Описать `POST /signup`.
+- Описать `POST /signin`.
+- Явно указать success status codes и body schema.
+- Явно указать validation/auth/conflict errors.
+- Отметить, что current auth model пока legacy JWT bearer, а не финальная secure session design.
+
+Выход:
+- спецификация auth endpoints
+
+Критерии готовности:
+- auth flow описан полностью и без обращения к backend-коду
+- зафиксировано, какие изменения auth откладываются в `Phase 5`
+
+### Phase 2.5: Users and Cards Contract
+
+Цель: описать основной доменный API проекта.
+
+Задачи:
+- Описать:
+  - `GET /users`
+  - `GET /users/me`
+  - `GET /users/{userID}`
+  - `PATCH /users/me`
+  - `PATCH /users/me/avatar`
+  - `GET /cards`
+  - `POST /cards`
+  - `DELETE /cards/{cardId}`
+  - `PUT /cards/{cardId}/likes`
+  - `DELETE /cards/{cardId}/likes`
+- Нормализовать path params, request bodies и response bodies.
+- Явно отметить ownership rules и типовые error cases.
+- Добавить `GET /health` как системный endpoint, если он вводится уже на этой фазе.
+
+Выход:
+- полный доменный OpenAPI contract для текущего Mesto API
+
+Критерии готовности:
+- все текущие user/card endpoints формально описаны
+- нет "серых зон", где поведение известно только из кода контроллера
+
+### Phase 2.6: Backend Test Harness
+
+Цель: создать основу для собственных backend integration tests.
+
+Задачи:
+- Выбрать test runner и HTTP testing stack.
+- Определить подход к тестовой БД:
+  - локальный Mongo instance
+  - `mongodb-memory-server`
+  - testcontainers
+- Подготовить test bootstrap:
+  - app factory / test server entrypoint
+  - setup/teardown hooks
+  - isolated env for tests
+- Свести startup backend к форме, пригодной для импортируемого тестового запуска, а не только `app.listen(...)`.
+
+Выход:
+- backend test harness
+- базовая структура тестов
+
+Критерии готовности:
+- тестовый раннер может поднять backend без ручного старта процесса
+- тестовая среда изолирована от development DB
+
+### Phase 2.7: Integration Tests for Current Contract
+
+Цель: покрыть ключевые сценарии текущего API до начала внутреннего рефакторинга backend.
+
+Задачи:
+- Добавить integration tests на:
+  - signup/signin
+  - unauthorized access
+  - get current user
+  - update profile/avatar
+  - create/get/delete card
+  - like/unlike card
+  - forbidden delete чужой карточки
+  - not found / validation errors
+- Связать тесты с route inventory и OpenAPI, чтобы было видно покрытие.
+- Не чинить архитектуру backend в этом шаге, только фиксировать текущее поведение.
+
+Выход:
+- первый набор contract-oriented integration tests
+
+Критерии готовности:
+- ключевые маршруты покрыты happy path и базовыми error path
+- backend refactor следующей фазы можно делать с safety net
+
+### Phase 2.8: Phase 2 Exit Review
+
+Цель: завершить фазу формальным подтверждением, что контракт и тестовая база готовы для `Phase 3`.
+
+Задачи:
+- Проверить полноту OpenAPI-описания относительно route inventory.
+- Проверить, что integration tests действительно запускаются в CI-совместимом режиме.
+- Выписать расхождения "current behavior vs desired behavior", которые сознательно откладываются.
+- Обновить `docs/unknowns.md` и ADR notes при появлении новых решений.
+
+Выход:
+- phase exit summary
+- contract coverage summary
+
+Критерии готовности:
+- `Phase 3` можно начинать без повторного reverse-engineering backend
+- есть явный контракт и минимальная safety net тестов
+
+### Recommended PR Split for Phase 2
+
+1. PR A: route inventory + contract glossary + error model draft
+2. PR B: `openapi/openapi.yaml` skeleton + auth contract
+3. PR C: users/cards contract completion
+4. PR D: backend test harness
+5. PR E: integration tests for key flows
+6. PR F: phase exit review and coverage summary
+
 ## 7. Implementation Order Inside the Codebase
 
 Ниже порядок, который минимизирует риск:

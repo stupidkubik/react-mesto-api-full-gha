@@ -1,0 +1,731 @@
+openapi: 3.1.0
+info:
+  title: react-mesto-api-full-gha API
+  version: 0.1.0
+  description: |
+    Baseline OpenAPI skeleton for the current Mesto backend.
+
+    This file starts as a documentation-first contract for the legacy runtime.
+    It should describe current behavior honestly before any backend normalization.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.stupid.kubik.nomoredomainsrocks.ru
+    description: Current production server
+
+tags:
+  - name: Auth
+    description: Registration and signin endpoints
+  - name: Users
+    description: Current user and user profile endpoints
+  - name: Cards
+    description: Card CRUD and like management endpoints
+  - name: System
+    description: System and service endpoints
+
+paths:
+  /signup:
+    post:
+      tags:
+        - Auth
+      operationId: signupUser
+      summary: Register a new user
+      description: |
+        Creates a new user in the current legacy auth model.
+
+        Current runtime behavior:
+        - accepts optional profile fields
+        - hashes the password before persistence
+        - returns a reduced user object without `_id`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /signin:
+    post:
+      tags:
+        - Auth
+      operationId: signinUser
+      summary: Sign in with email and password
+      description: |
+        Authenticates the user and returns the current legacy bearer token response.
+
+        Current runtime behavior:
+        - returns only `{ "token": "..." }`
+        - does not issue refresh tokens
+        - does not set cookies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SigninRequest'
+      responses:
+        '200':
+          description: Signin successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users:
+    get:
+      tags:
+        - Users
+      operationId: listUsers
+      summary: List users
+      description: |
+        Returns the current full list of users.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - no pagination
+        - returns raw user documents without password
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      operationId: getCurrentUser
+      summary: Get current user
+      description: |
+        Returns the user resolved from the current JWT payload.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - does not explicitly map "JWT valid but user missing" to a dedicated `404`
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags:
+        - Users
+      operationId: updateCurrentUser
+      summary: Update current user profile
+      description: |
+        Updates `name` and `about` for the current user.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - uses Mongoose validators on update
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCurrentUserRequest'
+      responses:
+        '200':
+          description: Updated current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/me/avatar:
+    patch:
+      tags:
+        - Users
+      operationId: updateCurrentUserAvatar
+      summary: Update current user avatar
+      description: |
+        Updates the avatar URL for the current user.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - uses Mongoose validators on update
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCurrentUserAvatarRequest'
+      responses:
+        '200':
+          description: Updated current user avatar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{userID}:
+    get:
+      tags:
+        - Users
+      operationId: getUserById
+      summary: Get user by id
+      description: |
+        Returns a single user by Mongo ObjectId.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - `userID` name is preserved from the runtime route
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /cards:
+    get:
+      tags:
+        - Cards
+      operationId: listCards
+      summary: List cards
+      description: |
+        Returns the current full list of cards.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - no pagination
+        - returns cards with populated `owner` and populated `likes`
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Cards
+      operationId: createCard
+      summary: Create a card
+      description: |
+        Creates a card for the current authenticated user.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - re-reads the created card and populates `owner` before returning
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCardRequest'
+      responses:
+        '201':
+          description: Card created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /cards/{cardId}:
+    delete:
+      tags:
+        - Cards
+      operationId: deleteCard
+      summary: Delete a card
+      description: |
+        Deletes a card if the current user is its owner.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - returns a message object rather than the deleted resource
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      responses:
+        '200':
+          description: Card deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteCardResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /cards/{cardId}/likes:
+    put:
+      tags:
+        - Cards
+      operationId: likeCard
+      summary: Like a card
+      description: |
+        Adds the current user to the card likes set.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - returns the updated card with populated `owner` and `likes`
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      responses:
+        '200':
+          description: Card liked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Cards
+      operationId: unlikeCard
+      summary: Remove like from a card
+      description: |
+        Removes the current user from the card likes set.
+
+        Current runtime behavior:
+        - protected by bearer JWT
+        - returns the updated card with populated `owner` and `likes`
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      responses:
+        '200':
+          description: Card unliked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    UserID:
+      name: userID
+      in: path
+      required: true
+      description: Current legacy user id path parameter name.
+      schema:
+        type: string
+        pattern: ^[a-fA-F0-9]{24}$
+
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      description: Mongo ObjectId of a card.
+      schema:
+        type: string
+        pattern: ^[a-fA-F0-9]{24}$
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Current runtime authentication model for protected routes.
+        The backend expects `Authorization: Bearer <token>`.
+
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 30
+        about:
+          type: string
+          minLength: 2
+          maxLength: 30
+        avatar:
+          type: string
+          pattern: ^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$
+        email:
+          type: string
+          pattern: ^\S+@\S+\.\S+$
+        password:
+          type: string
+          minLength: 2
+      additionalProperties: false
+
+    SigninRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          pattern: ^\S+@\S+\.\S+$
+        password:
+          type: string
+          minLength: 2
+      additionalProperties: false
+
+    UpdateCurrentUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 30
+        about:
+          type: string
+          minLength: 2
+          maxLength: 30
+      additionalProperties: false
+
+    UpdateCurrentUserAvatarRequest:
+      type: object
+      required:
+        - avatar
+      properties:
+        avatar:
+          type: string
+          pattern: ^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$
+      additionalProperties: false
+
+    CreateCardRequest:
+      type: object
+      required:
+        - name
+        - link
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 30
+        link:
+          type: string
+          pattern: ^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$
+      additionalProperties: false
+
+    RuntimeErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+    TargetErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - UNAUTHORIZED
+                - FORBIDDEN
+                - NOT_FOUND
+                - CONFLICT
+                - INTERNAL
+            message:
+              type: string
+            details: {}
+        requestId:
+          type: string
+      description: |
+        Forward-looking normalized error model.
+        This is not the current runtime response shape yet.
+
+    AuthTokenResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - token
+      properties:
+        token:
+          type: string
+
+    SignupResponse:
+      type: object
+      required:
+        - name
+        - about
+        - avatar
+        - email
+      properties:
+        name:
+          type: string
+        about:
+          type: string
+        avatar:
+          type: string
+        email:
+          type: string
+      description: |
+        Current legacy signup success shape.
+        Unlike other user responses, it does not include `_id`.
+
+    User:
+      type: object
+      required:
+        - _id
+        - name
+        - about
+        - avatar
+        - email
+      properties:
+        _id:
+          type: string
+          pattern: ^[a-fA-F0-9]{24}$
+        name:
+          type: string
+        about:
+          type: string
+        avatar:
+          type: string
+        email:
+          type: string
+
+    UserPublic:
+      type: object
+      required:
+        - _id
+        - name
+        - about
+        - avatar
+        - email
+      properties:
+        _id:
+          type: string
+          pattern: ^[a-fA-F0-9]{24}$
+        name:
+          type: string
+        about:
+          type: string
+        avatar:
+          type: string
+        email:
+          type: string
+      description: |
+        Current backend behavior populates full user documents in cards.
+        This schema intentionally mirrors that legacy shape for now.
+
+    Card:
+      type: object
+      required:
+        - _id
+        - name
+        - link
+        - owner
+        - likes
+        - createdAt
+      properties:
+        _id:
+          type: string
+          pattern: ^[a-fA-F0-9]{24}$
+        name:
+          type: string
+        link:
+          type: string
+        owner:
+          $ref: '#/components/schemas/UserPublic'
+        likes:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPublic'
+        createdAt:
+          type: string
+          format: date-time
+
+    DeleteCardResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+  responses:
+    ValidationError:
+      description: Request validation failed in celebrate or Mongoose validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RuntimeErrorEnvelope'
+          examples:
+            invalidBody:
+              value:
+                message: Validation failed
+
+    UnauthorizedError:
+      description: Missing, invalid, or rejected credentials.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RuntimeErrorEnvelope'
+          examples:
+            unauthorized:
+              value:
+                message: Problem with authorization
+
+    ForbiddenError:
+      description: Authenticated user does not have permission to perform the action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RuntimeErrorEnvelope'
+          examples:
+            forbidden:
+              value:
+                message: Invalid user
+
+    NotFoundError:
+      description: Requested route or entity was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RuntimeErrorEnvelope'
+          examples:
+            notFound:
+              value:
+                message: Page not found
+
+    ConflictError:
+      description: Request conflicts with existing state such as duplicate email.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RuntimeErrorEnvelope'
+          examples:
+            duplicateEmail:
+              value:
+                message: user@example.com already exist
+
+    InternalServerError:
+      description: Unexpected internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RuntimeErrorEnvelope'
+          examples:
+            internal:
+              value:
+                message: Server Error

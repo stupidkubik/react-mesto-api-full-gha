@@ -21,7 +21,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "lint": "npx eslint ."
+    "lint": "npx eslint .",
+    "test": "node --test test/**/*.test.js"
   },
   "keywords": [],
   "author": "Evgenii Rubin",
@@ -30,6 +31,7 @@
     "eslint": "^8.47.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.28.1",
+    "mongodb-memory-server": "^11.0.1",
     "nodemon": "^3.0.1"
   }
 }
