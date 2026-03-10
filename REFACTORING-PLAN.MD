@@ -739,6 +739,209 @@ source: `deep-research-report (1).md` + фактический анализ те
 6. PR F: logging hygiene
 7. PR G: phase exit review
 
+## 6.4. Phase 4 Breakdown: Frontend Migration Off CRA
+
+`Phase 4` нельзя делать как один frontend rewrite. Здесь разумнее разделить работу на migration baseline, API/session boundary и feature decomposition.
+
+### Phase 4.1: Frontend Runtime Inventory and Migration Strategy
+
+Цель: зафиксировать текущее frontend behavior и целевой migration path до начала кодовых изменений.
+
+Задачи:
+- Описать текущий runtime frontend:
+  - routing
+  - auth bootstrap
+  - initial data loading
+  - popup orchestration
+  - API usage
+- Зафиксировать основные точки хрупкости:
+  - CRA toolchain
+  - hardcoded API host
+  - `localStorage` token dependency
+  - oversized `App.jsx`
+  - отсутствие frontend tests
+- Выбрать migration approach:
+  - in-place migration inside `frontend/`
+  - без параллельного переписывания всего UI
+- Сверить план frontend migration с уже зафиксированным backend contract.
+
+Выход:
+- frontend migration strategy document
+- current-state inventory for frontend runtime
+
+Критерии готовности:
+- понятно, что именно мигрируется сначала, а что остается временно legacy
+- следующая фаза не требует повторного reverse-engineering `App.jsx`
+
+### Phase 4.2: Vite Baseline Without Behavioral Changes
+
+Цель: убрать CRA как build/runtime dependency, не меняя пользовательские сценарии.
+
+Задачи:
+- Перевести `frontend/` с `react-scripts` на `Vite`.
+- Настроить новый entrypoint и статические assets.
+- Сохранить текущую SPA routing model.
+- Подготовить root/frontend scripts для:
+  - `dev`
+  - `build`
+  - `preview`
+- Не менять доменную логику на этом шаге.
+
+Выход:
+- working Vite-based frontend baseline
+
+Критерии готовности:
+- frontend запускается через Vite
+- production build собирается без CRA
+- UI behavior до рефакторинга feature-слоев остается прежним
+
+### Phase 4.3: Env and API Client Boundary
+
+Цель: убрать hardcoded host и объединить сетевой слой в один предсказуемый клиент.
+
+Задачи:
+- Ввести frontend config module для env-backed значений.
+- Заменить hardcoded API URL на `VITE_*` env variables.
+- Объединить `utils/api.js` и `utils/auth.js` в единый API/auth client boundary.
+- Нормализовать:
+  - base request helper
+  - auth header injection
+  - response parsing
+  - error mapping
+- Зафиксировать интерфейс клиента так, чтобы он совпадал с backend contract.
+
+Выход:
+- unified frontend API client
+- env-driven runtime config
+
+Критерии готовности:
+- production host больше не зашит в исходниках
+- auth и domain requests используют одну request pipeline
+
+### Phase 4.4: Auth and Session Boundary Cleanup
+
+Цель: отделить auth bootstrap от UI orchestration, не меняя пока сам session model.
+
+Задачи:
+- Выделить auth/session state в отдельный слой.
+- Вынести логику:
+  - `checkToken`
+  - `handleLogin`
+  - `handleRegistration`
+  - `handleExit`
+- Сохранить текущий `localStorage` token flow как временный runtime contract до `Phase 5`.
+- Подготовить boundary, который потом позволит перейти на cookie/session model.
+
+Выход:
+- isolated auth/session module
+
+Критерии готовности:
+- `App.jsx` больше не владеет всей auth логикой напрямую
+- будущий security refactor не требует повторной декомпозиции UI tree
+
+### Phase 4.5: App Shell and Routing Decomposition
+
+Цель: уменьшить размер и ответственность `App.jsx`.
+
+Задачи:
+- Оставить в `App` только composition concerns:
+  - providers
+  - routes
+  - shell-level state wiring
+- Вынести route composition и guard wiring в отдельные frontend modules.
+- Убрать из `App.jsx` смешение:
+  - auth bootstrap
+  - data bootstrap
+  - popup handlers
+  - route rendering
+
+Выход:
+- slimmer app shell
+- clearer route composition
+
+Критерии готовности:
+- `App.jsx` читается как entry composition, а не как монолитный runtime controller
+- маршруты и protected flow изолированы от popup/domain logic
+
+### Phase 4.6: Feature Extraction for Profile, Cards, and Popups
+
+Цель: разрезать UI-логику по доменным областям без изменения API shape.
+
+Задачи:
+- Выделить feature areas:
+  - auth
+  - profile
+  - cards
+  - popups/modals
+  - shared session/api
+- Перевести data-loading и mutations в feature-oriented hooks/services.
+- Упорядочить состояния:
+  - loading
+  - submit pending
+  - request failure
+  - optimistic/replace flows for cards
+- Минимизировать prop drilling там, где сейчас orchestration слишком плотная.
+
+Выход:
+- feature-based frontend structure
+
+Критерии готовности:
+- основные пользовательские сценарии не зависят от одного гигантского компонента
+- profile/cards/popups изменяются без каскадных правок по всему дереву
+
+### Phase 4.7: Frontend Test Baseline
+
+Цель: получить safety net перед будущими auth/security изменениями.
+
+Задачи:
+- Выбрать test runner для Vite-era frontend.
+- Добавить минимум:
+  - smoke render test
+  - auth flow unit/integration coverage
+  - cards/profile happy-path coverage
+- Решить стратегию mock API:
+  - lightweight fetch mocks
+  - либо MSW как следующий шаг
+- Подготовить frontend tests к включению в root CI.
+
+Выход:
+- first-party frontend test baseline
+
+Критерии готовности:
+- frontend refactor дальше не идет вслепую
+- ключевые сценарии имеют хотя бы минимальную automated protection
+
+### Phase 4.8: Phase 4 Exit Review
+
+Цель: формально закрыть frontend migration phase и отделить ее от `Phase 5` security/session work.
+
+Задачи:
+- Проверить, что frontend больше не зависит от CRA.
+- Сверить frontend API client с OpenAPI/current backend contract.
+- Обновить `docs/unknowns.md` и notes по residual legacy.
+- Зафиксировать, что осталось на `Phase 5`:
+  - session model upgrade
+  - deeper typing
+  - e2e expansion
+
+Выход:
+- phase exit review
+
+Критерии готовности:
+- frontend toolchain и runtime structure стабилизированы
+- security/session upgrade можно делать поверх нового frontend baseline
+
+### Recommended PR Split for Phase 4
+
+1. PR A: frontend migration strategy + inventory
+2. PR B: Vite baseline
+3. PR C: env config + unified API client
+4. PR D: auth/session boundary extraction
+5. PR E: app shell decomposition
+6. PR F: profile/cards/popups feature extraction
+7. PR G: frontend test baseline
+8. PR H: phase exit review
+
 ## 7. Implementation Order Inside the Codebase
 
 Ниже порядок, который минимизирует риск:
