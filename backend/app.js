@@ -12,34 +12,90 @@ const error = require('./middlewares/error');
 const limiter = require('./middlewares/limiter');
 const router = require('./routes');
 
-const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
+const DEFAULT_PORT = 3000;
+const DEFAULT_DB_URL = 'mongodb://127.0.0.1:27017/mestodb';
 
-mongoose
-  .connect(DB_URL, {
+function createApp() {
+  const app = express();
+
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(cors());
+
+  app.get('/crash-test', () => {
+    setTimeout(() => {
+      throw new Error('Сервер сейчас упадёт');
+    }, 0);
+  });
+
+  app.disable('x-powered-by');
+  app.use(helmet());
+
+  app.use(requestLogger);
+  app.use(limiter);
+
+  app.use(router);
+
+  app.use(errorLogger);
+  app.use(errors());
+  app.use(error);
+
+  return app;
+}
+
+async function connectToDatabase(dbUrl = process.env.DB_URL || DEFAULT_DB_URL) {
+  if (mongoose.connection.readyState !== 0) {
+    return mongoose.connection;
+  }
+
+  await mongoose.connect(dbUrl, {
     useNewUrlParser: true,
   });
 
-const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+  return mongoose.connection;
+}
 
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
+async function disconnectDatabase() {
+  if (mongoose.connection.readyState === 0) {
+    return;
+  }
 
-app.disable('x-powered-by');
-app.use(helmet());
+  await mongoose.disconnect();
+}
 
-app.use(requestLogger);
-app.use(limiter);
+async function startServer({
+  port = process.env.PORT || DEFAULT_PORT,
+  dbUrl = process.env.DB_URL || DEFAULT_DB_URL,
+} = {}) {
+  await connectToDatabase(dbUrl);
 
-app.use(router);
+  const app = createApp();
 
-app.use(errorLogger);
-app.use(errors());
-app.use(error);
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, () => {
+      resolve({
+        app,
+        server,
+        port: server.address().port,
+      });
+    });
 
-app.listen(PORT);
+    server.on('error', reject);
+  });
+}
+
+if (require.main === module) {
+  startServer().catch((err) => {
+    process.stderr.write(`${err.stack || err}\n`);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  DEFAULT_PORT,
+  DEFAULT_DB_URL,
+  createApp,
+  connectToDatabase,
+  disconnectDatabase,
+  startServer,
+};
